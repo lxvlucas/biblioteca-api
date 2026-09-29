@@ -1,12 +1,19 @@
 package com.lucas.biblioteca.entities;
 
+import com.lucas.biblioteca.entities.enums.Categoria;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "livros")
@@ -18,9 +25,14 @@ public class Livro {
 	@NotBlank
 	@Column(nullable = false)
 	private String titulo;
-	@NotBlank
+	@NotNull
+	@ManyToOne(optional = false)
+	@JoinColumn(name = "autor_id" ,nullable = false)
+	private Autor autor;
+	@Enumerated(EnumType.STRING)
+	@NotNull
 	@Column(nullable = false)
-	private String autor;
+	private Categoria categoria;
 	private Integer edicao;
 	private Integer ano;
 	@NotBlank
@@ -30,23 +42,24 @@ public class Livro {
 	public Livro() {
 		
 	}
+
 	
-	public Livro(Long id, String titulo, String autor, Integer edicao, Integer ano, String isbn) {
-		this.id = id;
+
+	public Livro(@NotBlank String titulo, @NotNull Autor autor, @NotNull Categoria categoria, Integer edicao, Integer ano, @NotBlank String isbn) {
 		this.titulo = titulo;
 		this.autor = autor;
+		this.categoria = categoria;
 		this.edicao = edicao;
 		this.ano = ano;
 		this.isbn = isbn;
 	}
 
+
+
 	public Long getId() {
 		return id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
-	}
 
 	public String getTitulo() {
 		return titulo;
@@ -56,13 +69,18 @@ public class Livro {
 		this.titulo = titulo;
 	}
 
-	public String getAutor() {
+	
+	public Autor getAutor() {
 		return autor;
 	}
 
-	public void setAutor(String autor) {
+
+
+	public void setAutor(Autor autor) {
 		this.autor = autor;
 	}
+
+
 
 	public Integer getEdicao() {
 		return edicao;
@@ -87,4 +105,18 @@ public class Livro {
 	public void setIsbn(String isbn) {
 		this.isbn = isbn;
 	}
+
+
+
+	public Categoria getCategoria() {
+		return categoria;
+	}
+
+
+
+	public void setCategoria(Categoria categoria) {
+		this.categoria = categoria;
+	}
+	
+	
 }

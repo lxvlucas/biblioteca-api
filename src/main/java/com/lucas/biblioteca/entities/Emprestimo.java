@@ -39,8 +39,7 @@ public class Emprestimo {
 		
 	}
 
-	public Emprestimo(Long id, LocalDate dataEmprestimo, LocalDate dataDevolucaoPrevista, LocalDate dataDevolucao, Leitor leitor, Exemplar exemplar) {
-		this.id = id;
+	public Emprestimo(@NotNull LocalDate dataEmprestimo, @NotNull LocalDate dataDevolucaoPrevista, LocalDate dataDevolucao, Leitor leitor, Exemplar exemplar) {
 		this.dataEmprestimo = dataEmprestimo;
 		this.dataDevolucaoPrevista = dataDevolucaoPrevista;
 		this.dataDevolucao = dataDevolucao;
@@ -50,10 +49,6 @@ public class Emprestimo {
 
 	public Long getId() {
 		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public LocalDate getDataEmprestimo() {

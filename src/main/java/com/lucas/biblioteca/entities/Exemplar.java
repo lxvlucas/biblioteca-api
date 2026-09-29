@@ -23,17 +23,12 @@ public class Exemplar {
 		
 	}
 
-	public Exemplar(Long id, Livro livro) {
-		this.id = id;
+	public Exemplar(Livro livro) {
 		this.livro = livro;
 	}
 
 	public Long getId() {
 		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public Livro getLivro() {
