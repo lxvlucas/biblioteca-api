@@ -1,0 +1,58 @@
+@startuml
+title Registro e devolução de empréstimos
+left to right direction
+skinparam classAttributeIconSize 0
+
+package "Serviços" {
+    class EmprestimoService {
+        +registrarEmprestimo(leitorId: Long, exemplarId: Long): Emprestimo
+        +registrarDevolucao(emprestimoId: Long): Emprestimo
+    }
+}
+
+package "Repositórios" {
+    interface LeitorRepository
+    interface ExemplarRepository
+    interface EmprestimoRepository
+}
+
+package "Entidades" {
+    class Leitor {
+        -id: Long
+        -nome: String
+    }
+
+    class Exemplar {
+        -id: Long
+    }
+
+    class Emprestimo {
+        -id: Long
+        -dataEmprestimo: LocalDate
+        -dataDevolucaoPrevista: LocalDate
+        -dataDevolucao: LocalDate
+    }
+}
+
+EmprestimoService ..> LeitorRepository : busca o leitor
+EmprestimoService ..> ExemplarRepository : busca o exemplar
+EmprestimoService ..> EmprestimoRepository : consulta e salva
+EmprestimoService ..> Emprestimo : cria ou atualiza
+
+LeitorRepository ..> Leitor : acessa
+ExemplarRepository ..> Exemplar : acessa
+EmprestimoRepository ..> Emprestimo : acessa
+
+Leitor "1" -- "0..*" Emprestimo
+Exemplar "1" -- "0..*" Emprestimo
+
+note bottom of EmprestimoService
+    Coordena a operação:
+    - verifica leitor e exemplar
+    - verifica empréstimo ativo do exemplar
+    - aplica as regras de prazo e limite
+    - solicita a gravação ao repositório
+    - impede registrar uma segunda devolução
+end note
+
+@enduml

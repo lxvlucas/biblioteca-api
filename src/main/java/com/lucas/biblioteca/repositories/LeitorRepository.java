@@ -7,5 +7,6 @@ import com.lucas.biblioteca.entities.Leitor;
 
 @Repository
 public interface LeitorRepository extends JpaRepository<Leitor, Long>{
-
+	boolean existsByCpf(String cpf);
+	boolean existsByEmail(String email);
 }

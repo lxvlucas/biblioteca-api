@@ -51,11 +51,14 @@ public class LivroService {
 		if (autorInformado.getId() != null) {
 			autor = autorRepository.findById(autorInformado.getId()).orElseThrow(() -> new IllegalArgumentException("Autor não encontrado."));
 		} else {
+			String nome = autorInformado.getNome();
 			//se nome for nulo ou branco, pede para informar um nome
-			if (autorInformado.getNome() == null || autorInformado.getNome().isBlank()) {
+			if (nome == null || nome.isBlank()) {
 				throw new IllegalArgumentException("Informe o nome do autor.");
 			}
-		autor = autorRepository.save(autorInformado);
+			String nomeNormalizado = nome.strip();
+			
+			autor = autorRepository.findByNomeIgnoreCase(nomeNormalizado).orElseGet(() -> autorRepository.save(new Autor(nomeNormalizado)));
 		}
 		livro.setAutor(autor);
 		//autor verificado

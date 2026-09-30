@@ -1,0 +1,32 @@
+@startuml
+title Adicionar leitor
+left to right direction
+skinparam classAttributeIconSize 0
+
+package "Serviços" {
+    class LeitorService {
+        +registrarLeitor(nome: String, cpf: String, email: String, celular: String): Leitor
+    }
+}
+
+package "Repositórios" {
+    interface LeitorRepository
+}
+
+package "Entidades" {
+    abstract class Usuario {
+    #id: Long
+    #nome: String
+    #cpf: String
+    #email: String
+    #celular: String
+    }
+    class Leitor {
+    }
+}
+
+LeitorService ..> LeitorRepository : consulta e registra
+LeitorService ..> Leitor : cria
+Usuario <|-- Leitor
+LeitorRepository ..> Leitor : acessa
+@enduml

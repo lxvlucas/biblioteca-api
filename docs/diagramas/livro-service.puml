@@ -1,0 +1,42 @@
+@startuml
+title Adicionar e remover Livros
+left to right direction
+skinparam classAttributeIconSize 0
+
+package "Serviços" {
+    class LivroService {
+        +registrarLivro(titulo: String, autor: Autor, edicao: Integer, ano: Integer, categoria: Categoria, isbn: String): Livro
+        +excluirLivro(id: Long): void
+    }
+}
+
+package "Repositórios" {
+    interface LivroRepository
+    interface ExemplarRepository
+}
+
+package "Entidades" {
+    class Livro {
+    -id: Long
+    -titulo: String
+    -autor: Autor
+    -edicao: Integer
+    -ano: Integer
+    -categoria: Categoria
+    -isbn: String
+    }
+}
+
+LivroService ..> LivroRepository : consulta, salva e exclui
+LivroService ..> ExemplarRepository : verifica exemplares vinculados
+LivroService ..> Livro : cria
+
+LivroRepository ..> Livro : Registra
+
+Livro "1" -- "0..*" Exemplar
+Exemplar "1" -- "0..*" Emprestimo
+
+note bottom of LivroService
+    Só exclui livros sem exemplares vinculados.
+endnote
+@enduml

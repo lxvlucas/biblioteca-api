@@ -1,0 +1,67 @@
+@startuml
+title Diagrama de Classes - Sistema de Biblioteca
+
+abstract class Usuario {
+    #id: Long
+    #nome: String
+    #cpf: String
+    #email: String
+    #celular: String
+}
+
+class Leitor {
+}
+
+class Admin {
+}
+
+class Livro {
+    -id: Long
+    -titulo: String
+    -autor: Autor
+    -edicao: Integer
+    -ano: Integer
+    -categoria: Categoria
+    -isbn: String
+}
+
+class Autor {
+    -id: Long
+    -nome: String
+}
+
+enum Categoria {
+    FICCAO_CIENTIFICA
+    FANTASIA
+    SUSPENSE
+    ROMANCE
+    BIOGRAFIAS
+    TERROR
+    POESIA
+    NEGOCIOS
+    DIREITO
+    OUTROS
+}
+
+class Emprestimo {
+    -id: Long
+    -dataEmprestimo: LocalDate
+    -dataDevolucaoPrevista: LocalDate
+    -dataDevolucao: LocalDate
+    -leitor: Leitor
+    -exemplar: Exemplar
+}
+
+class Exemplar {
+    -id: Long
+    -livro: Livro
+}
+
+Usuario <|-- Leitor
+Usuario <|-- Admin
+
+Livro "1" -- "0..*" Exemplar : tem
+Autor "1" -- "0..*" Livro : Escreveu
+Leitor "1" -- "0..*" Emprestimo
+Emprestimo "0..*" -- "1" Exemplar : possui
+@enduml

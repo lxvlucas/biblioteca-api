@@ -7,5 +7,6 @@ import com.lucas.biblioteca.entities.Admin;
 
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Long>{
-
+	boolean existsByCpf(String cpf);
+	boolean existsByEmail(String email);
 }
