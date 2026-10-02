@@ -8,4 +8,5 @@ import com.lucas.biblioteca.entities.Livro;
 @Repository
 public interface LivroRepository extends JpaRepository<Livro, Long>{
 	boolean existsByIsbn(String isbn);
+	boolean existsByTitulo(String titulo);
 }
