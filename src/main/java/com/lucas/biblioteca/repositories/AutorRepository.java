@@ -9,6 +9,5 @@ import com.lucas.biblioteca.entities.Autor;
 
 @Repository
 public interface AutorRepository extends JpaRepository<Autor, Long>{
-	boolean existsByNome(String nome);
 	Optional<Autor> findByNomeIgnoreCase(String nome);
 }

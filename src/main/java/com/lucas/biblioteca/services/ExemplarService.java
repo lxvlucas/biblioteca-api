@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.lucas.biblioteca.entities.Exemplar;
 import com.lucas.biblioteca.entities.Livro;
+import com.lucas.biblioteca.exceptions.RecursoNaoEncontradoException;
 import com.lucas.biblioteca.repositories.ExemplarRepository;
 import com.lucas.biblioteca.repositories.LivroRepository;
 
@@ -24,25 +25,25 @@ public class ExemplarService {
 	@Transactional
 	public Exemplar registrarExemplar(Exemplar exemplar) {
 		if (exemplar.getId() != null) {
-			throw new IllegalArgumentException("Exemplar novo não deve ter ID.");
+			throw new RecursoNaoEncontradoException("Exemplar novo não deve ter ID.");
 		}
 		if (exemplar.getLivro() == null) {
-			throw new IllegalArgumentException("Exemplar novo precisa de um livro.");
+			throw new RecursoNaoEncontradoException("Exemplar novo precisa de um livro.");
 		}
 		if (exemplar.getLivro().getId() == null) {
-			throw new IllegalArgumentException("Livro inválido.");
+			throw new RecursoNaoEncontradoException("Livro inválido.");
 		}
 		if (livroRepository.existsById(exemplar.getLivro().getId())) {
-			Livro livroInformado = livroRepository.findById(exemplar.getLivro().getId()).orElseThrow(() -> new IllegalArgumentException("Livro não encontrado."));
+			Livro livroInformado = livroRepository.findById(exemplar.getLivro().getId()).orElseThrow(() -> new RecursoNaoEncontradoException("Livro não encontrado."));
 			exemplar.setLivro(livroInformado);
 		} else {
-			throw new IllegalArgumentException("Livro não encontrado.");
+			throw new RecursoNaoEncontradoException("Livro não encontrado.");
 		}
 		return exemplarRepository.save(exemplar);
 	}
 	
 	public Exemplar findById(Long id) {
-		return exemplarRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Exemplar não encontrado."));
+		return exemplarRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Exemplar não encontrado."));
 	}
 	
 	public List<Exemplar> findAll() {

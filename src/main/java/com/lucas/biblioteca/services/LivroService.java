@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.lucas.biblioteca.entities.Autor;
 import com.lucas.biblioteca.entities.Livro;
+import com.lucas.biblioteca.exceptions.RecursoNaoEncontradoException;
 import com.lucas.biblioteca.repositories.AutorRepository;
 import com.lucas.biblioteca.repositories.LivroRepository;
 
@@ -26,15 +27,15 @@ public class LivroService {
 	@Transactional
 	public Livro registrarLivro (Livro livro) {
 		if (livro.getId() != null) {
-			throw new IllegalArgumentException("Um livro novo não deve ter ID.");
+			throw new RecursoNaoEncontradoException("Um livro novo não deve ter ID.");
 		}
 		// verificador de ISBN/ verifica se está em branco
 		if (livro.getIsbn() == null || livro.getIsbn().isBlank()) {
-			throw new IllegalArgumentException("Informe o ISBN do livro.");
+			throw new RecursoNaoEncontradoException("Informe o ISBN do livro.");
 		}
 		//verifica se o ISBN ja existe
 		if (livroRepository.existsByIsbn(livro.getIsbn())) {
-			throw new IllegalArgumentException("ISBN já existente");
+			throw new RecursoNaoEncontradoException("ISBN já existente");
 		}
 		
 		//verifcador de autor
@@ -42,19 +43,19 @@ public class LivroService {
 		Autor autorInformado = livro.getAutor();
 		// se autor nulo, pede para digitar um
 		if (autorInformado == null) {
-			throw new IllegalArgumentException("Informe um autor.");
+			throw new RecursoNaoEncontradoException("Informe um autor.");
 		}
 		
 		Autor autor;
 		
 		//se for diferente de nulo, vai buscar
 		if (autorInformado.getId() != null) {
-			autor = autorRepository.findById(autorInformado.getId()).orElseThrow(() -> new IllegalArgumentException("Autor não encontrado."));
+			autor = autorRepository.findById(autorInformado.getId()).orElseThrow(() -> new RecursoNaoEncontradoException("Autor não encontrado."));
 		} else {
 			String nome = autorInformado.getNome();
 			//se nome for nulo ou branco, pede para informar um nome
 			if (nome == null || nome.isBlank()) {
-				throw new IllegalArgumentException("Informe o nome do autor.");
+				throw new RecursoNaoEncontradoException("Informe o nome do autor.");
 			}
 			String nomeNormalizado = nome.strip();
 			
@@ -67,7 +68,7 @@ public class LivroService {
 	}
 	
 	public Livro findById(Long id) {
-		return livroRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Livro não encontrado."));
+		return livroRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Livro não encontrado."));
 	}
 	
 	public List<Livro> findAll() {

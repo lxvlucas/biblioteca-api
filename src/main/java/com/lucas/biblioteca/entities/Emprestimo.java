@@ -39,10 +39,7 @@ public class Emprestimo {
 		
 	}
 
-	public Emprestimo(@NotNull LocalDate dataEmprestimo, @NotNull LocalDate dataDevolucaoPrevista, LocalDate dataDevolucao, Leitor leitor, Exemplar exemplar) {
-		this.dataEmprestimo = dataEmprestimo;
-		this.dataDevolucaoPrevista = dataDevolucaoPrevista;
-		this.dataDevolucao = dataDevolucao;
+	public Emprestimo(Leitor leitor, Exemplar exemplar) {
 		this.leitor = leitor;
 		this.exemplar = exemplar;
 	}

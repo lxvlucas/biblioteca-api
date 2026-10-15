@@ -4,11 +4,13 @@ API de gerenciamento de biblioteca criada para estudar Java, Spring Boot e Postg
 
 ## Estado atual
 
-A camada de serviços está em desenvolvimento. As entidades JPA e os repositories já estão definidos. Os services têm métodos de cadastro, listagem e busca por ID.
+As entidades JPA, os repositories, os services, os DTOs e os seis controllers estão implementados. A API tem endpoints de cadastro, listagem e busca por ID para autores, livros, leitores, administradores, exemplares e empréstimos, além do registro de devolução.
 
-Ainda faltam os controllers, os DTOs e os endpoints HTTP dos cadastros, além das devoluções, exclusões e regras completas de disponibilidade e limite de empréstimos. A entidade `Admin` já existe; autenticação e autorização continuam pendentes.
+O empréstimo usa a data atual, prazo de 14 dias e limite de três empréstimos ativos por leitor. O service rejeita um exemplar já emprestado e uma segunda devolução do mesmo empréstimo em operações sequenciais.
 
-As próximas etapas e as decisões em aberto estão no [roteiro de desenvolvimento](ROTEIRO.md).
+A próxima etapa é implementar tratamento de erros HTTP e validar os fluxos com PostgreSQL. Ainda faltam testes das regras e endpoints, proteção contra operações simultâneas, atualização e exclusão de cadastros e consultas de empréstimos ativos e atrasados. Autenticação e autorização ficam para uma evolução futura.
+
+Os comportamentos descritos nesta página refletem a leitura do código. A execução completa e os cenários de erro ainda precisam ser verificados.
 
 ## Tecnologias
 
@@ -16,9 +18,9 @@ As próximas etapas e as decisões em aberto estão no [roteiro de desenvolvimen
 | --- | --- |
 | Java 21 | Linguagem do projeto |
 | Spring Boot 4.1.1 | Configuração e inicialização da aplicação |
-| Spring Web MVC | Base para a futura camada HTTP |
+| Spring Web MVC | Controllers e endpoints HTTP |
 | Spring Data JPA / Hibernate | Mapeamento das entidades e persistência |
-| Jakarta Validation | Restrições nos campos das entidades |
+| Jakarta Validation | Validação dos requests e das entidades |
 | PostgreSQL | Banco de dados |
 | Maven Wrapper | Build e execução |
 | PlantUML | Diagramas de classes e serviços |
@@ -43,14 +45,77 @@ Além do cadastro, todos os services têm os métodos `findAll` e `findById`.
 
 | Serviço | O que faz hoje |
 | --- | --- |
-| `AutorService` | Cadastra autores. Rejeita ID preenchido, nome vazio e nome já existente. |
+| `AutorService` | Cadastra autores. Rejeita ID preenchido e nome vazio, remove espaços nas pontas do nome e verifica nome existente ignorando maiúsculas e minúsculas. |
 | `LivroService` | Cadastra livros com ISBN obrigatório e único. Busca o autor pelo ID ou pelo nome informado; na busca por nome, cria o autor se não o encontrar. |
 | `LeitorService` | Cadastra leitores com nome, CPF, e-mail e celular obrigatórios. Verifica se o CPF ou o e-mail já estão cadastrados. |
 | `AdminService` | Cadastra administradores com verificações semelhantes às do cadastro de leitores. |
-| `ExemplarService` | Cadastra exemplares sem ID preenchido e com um livro informado. Ainda falta buscar o livro cadastrado. |
-| `EmprestimoService` | Registra empréstimos com leitor e exemplar informados. Usa a data atual e prevê a devolução em 14 dias. A validação das associações e da disponibilidade ainda está pendente. |
+| `ExemplarService` | Cadastra exemplares sem ID preenchido, exige o ID de um livro existente e associa o livro encontrado. |
+| `EmprestimoService` | Busca leitor e exemplar cadastrados, verifica disponibilidade e limite de três empréstimos ativos, calcula o prazo de 14 dias e registra a devolução, rejeitando repetição. |
 
-O prazo de 14 dias já está no código. O limite de empréstimos e as demais regras do fluxo ainda precisam ser definidos e implementados, conforme o roteiro.
+Um empréstimo é considerado ativo enquanto `dataDevolucao` for nula, mesmo se estiver atrasado. As verificações de disponibilidade, limite e devolução ainda precisam de proteção contra requisições simultâneas. A reutilização de autores pelo nome considera nomes iguais como o mesmo autor nesta versão; a unicidade dessa comparação ainda precisa ser garantida no banco.
+
+## Endpoints implementados
+
+Endereço local padrão: `http://localhost:8080`.
+
+| Recurso | Cadastrar | Listar | Buscar por ID |
+| --- | --- | --- | --- |
+| Autores | `POST /autores` | `GET /autores` | `GET /autores/{id}` |
+| Livros | `POST /livros` | `GET /livros` | `GET /livros/{id}` |
+| Leitores | `POST /leitores` | `GET /leitores` | `GET /leitores/{id}` |
+| Administradores | `POST /admins` | `GET /admins` | `GET /admins/{id}` |
+| Exemplares | `POST /exemplares` | `GET /exemplares` | `GET /exemplares/{id}` |
+| Empréstimos | `POST /emprestimos` | `GET /emprestimos` | `GET /emprestimos/{id}` |
+
+Devolução: `POST /emprestimos/{id}/devolucao`, sem corpo de requisição.
+
+Os cadastros retornam `201 Created`; as consultas e a devolução bem-sucedida retornam `200 OK`. As respostas usam DTOs, e os requests de cadastro são validados com `@Valid`. Ainda não há tratamento próprio que traduza as exceções dos services em respostas 400, 404 ou 409.
+
+### Exemplos de requisições
+
+Envie os cadastros com `Content-Type: application/json`.
+
+Cadastro de autor (`POST /autores`):
+
+```json
+{
+  "nome": "Machado de Assis"
+}
+```
+
+Cadastro de livro (`POST /livros`):
+
+```json
+{
+  "titulo": "Dom Casmurro",
+  "nomeAutor": "Machado de Assis",
+  "edicao": 1,
+  "ano": 2020,
+  "categoria": "ROMANCE",
+  "isbn": "9780000000000"
+}
+```
+
+Os dados de edição e ISBN acima são ilustrativos. Se informar `autorId`, o sistema busca esse autor e prioriza o ID. Sem ID, exige `nomeAutor`, reutiliza o autor encontrado pelo nome ou cadastra um novo.
+
+Cadastro de exemplar (`POST /exemplares`):
+
+```json
+{
+  "livroId": 1
+}
+```
+
+Registro de empréstimo (`POST /emprestimos`):
+
+```json
+{
+  "leitorId": 1,
+  "exemplarId": 1
+}
+```
+
+Use IDs existentes no seu banco. As datas são preenchidas pelo service. Para cadastrar leitor ou administrador, informe `nome`, `cpf` no formato `000.000.000-00`, `email` e `celular`. A validação atual do CPF verifica o formato; a verificação dos dígitos verificadores ainda não foi implementada.
 
 ## Diagramas
 
@@ -104,12 +169,13 @@ Para executar esse comando, `plantuml.jar` deve estar no diretório atual. Depen
 │   │   └── enums/                   # Categorias dos livros
 │   ├── repositories/               # Interfaces Spring Data JPA
 │   ├── services/                   # Cadastros, consultas e regras de negócio
+│   ├── dto/                        # Dados de entrada e saída da API
+│   ├── controllers/                # Endpoints HTTP
 │   └── BibliotecaApplication.java   # Entrada da aplicação
 ├── src/main/resources/
 │   └── application.properties      # Configuração da aplicação e do banco
 ├── src/test/java/                   # Teste de carregamento do contexto
-├── pom.xml
-└── ROTEIRO.md
+└── pom.xml
 ```
 
 ## Executar localmente
@@ -146,8 +212,9 @@ O teste atual, `BibliotecaApplicationTests`, verifica se o contexto Spring carre
 
 ## Próximas etapas
 
-- Validar a persistência com PostgreSQL e revisar as regras dos cadastros.
-- Criar DTOs, controller e tratamento de erros para o fluxo de autores.
-- Expandir os endpoints para livros, leitores e exemplares.
-- Implementar devoluções, exclusões e validações completas dos empréstimos.
-- Adicionar testes de persistência e de regras de negócio.
+- Implementar tratamento de erros: registro não encontrado, dados inválidos e conflitos de negócio, com respostas JSON consistentes.
+- Testar os endpoints e a persistência, incluindo cadastros, empréstimo, devolução e rejeição de operações inválidas.
+- Garantir as regras de unicidade, disponibilidade, limite e devolução em operações simultâneas.
+- Implementar atualização e exclusão quando permitidas, preservando o histórico de empréstimos.
+- Adicionar consultas de empréstimos ativos e atrasados.
+- Refinar validações de CPF, ISBN e valores numéricos e documentar os resultados dos testes.

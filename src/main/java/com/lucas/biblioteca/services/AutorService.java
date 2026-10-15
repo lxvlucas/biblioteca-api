@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.lucas.biblioteca.entities.Autor;
+import com.lucas.biblioteca.exceptions.RecursoNaoEncontradoException;
 import com.lucas.biblioteca.repositories.AutorRepository;
 
 import jakarta.transaction.Transactional;
@@ -20,21 +21,26 @@ public class AutorService {
 	@Transactional
 	public Autor registrarAutor(Autor autor) {
 		if (autor.getId() != null) {
-			throw new IllegalArgumentException("Autor novo deve ter id nulo.");
+			throw new RecursoNaoEncontradoException("Autor novo deve ter id nulo.");
 		}
 		
 		if (autor.getNome() == null || autor.getNome().isBlank()) {
-			throw new IllegalArgumentException("Informe nome do autor.");
+			throw new RecursoNaoEncontradoException("Informe nome do autor.");
 		}
+		//normaliza o nome
+		String nomeNormalizado = autor.getNome().strip();
+		//ve se o nome existe no repository
+		if (autorRepository.findByNomeIgnoreCase(nomeNormalizado).isPresent()) {
+			throw new RecursoNaoEncontradoException("Este autor já existe.");
+		}
+		//seta nome normalizado
+		autor.setNome(nomeNormalizado);
 		
-		if (autorRepository.existsByNome(autor.getNome())) {
-			throw new IllegalArgumentException("Este autor já existe.");
-		}
 		return autorRepository.save(autor);
 	}
 	
 	public Autor findById(Long id) {
-		return autorRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Autor não encontrado."));
+		return autorRepository.findById(id).orElseThrow(() -> new RecursoNaoEncontradoException("Autor não encontrado."));
 	}
 	
 	public List<Autor> findAll() {
