@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.lucas.biblioteca.entities.Autor;
+import com.lucas.biblioteca.exceptions.ConflitoNegocioException;
+import com.lucas.biblioteca.exceptions.DadoInvalidoException;
 import com.lucas.biblioteca.exceptions.RecursoNaoEncontradoException;
 import com.lucas.biblioteca.repositories.AutorRepository;
 
@@ -21,17 +23,17 @@ public class AutorService {
 	@Transactional
 	public Autor registrarAutor(Autor autor) {
 		if (autor.getId() != null) {
-			throw new RecursoNaoEncontradoException("Autor novo deve ter id nulo.");
+			throw new DadoInvalidoException("Autor novo deve ter id nulo.");
 		}
 		
 		if (autor.getNome() == null || autor.getNome().isBlank()) {
-			throw new RecursoNaoEncontradoException("Informe nome do autor.");
+			throw new DadoInvalidoException("Informe nome do autor.");
 		}
 		//normaliza o nome
 		String nomeNormalizado = autor.getNome().strip();
 		//ve se o nome existe no repository
 		if (autorRepository.findByNomeIgnoreCase(nomeNormalizado).isPresent()) {
-			throw new RecursoNaoEncontradoException("Este autor já existe.");
+			throw new ConflitoNegocioException("Este autor já existe.");
 		}
 		//seta nome normalizado
 		autor.setNome(nomeNormalizado);

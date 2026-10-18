@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.lucas.biblioteca.entities.Exemplar;
 import com.lucas.biblioteca.entities.Livro;
+import com.lucas.biblioteca.exceptions.DadoInvalidoException;
 import com.lucas.biblioteca.exceptions.RecursoNaoEncontradoException;
 import com.lucas.biblioteca.repositories.ExemplarRepository;
 import com.lucas.biblioteca.repositories.LivroRepository;
@@ -25,13 +26,13 @@ public class ExemplarService {
 	@Transactional
 	public Exemplar registrarExemplar(Exemplar exemplar) {
 		if (exemplar.getId() != null) {
-			throw new RecursoNaoEncontradoException("Exemplar novo não deve ter ID.");
+			throw new DadoInvalidoException("Exemplar novo não deve ter ID.");
 		}
 		if (exemplar.getLivro() == null) {
-			throw new RecursoNaoEncontradoException("Exemplar novo precisa de um livro.");
+			throw new DadoInvalidoException("Exemplar novo precisa de um livro.");
 		}
 		if (exemplar.getLivro().getId() == null) {
-			throw new RecursoNaoEncontradoException("Livro inválido.");
+			throw new DadoInvalidoException("Livro inválido.");
 		}
 		if (livroRepository.existsById(exemplar.getLivro().getId())) {
 			Livro livroInformado = livroRepository.findById(exemplar.getLivro().getId()).orElseThrow(() -> new RecursoNaoEncontradoException("Livro não encontrado."));

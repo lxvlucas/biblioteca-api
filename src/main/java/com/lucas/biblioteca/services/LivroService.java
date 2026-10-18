@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 
 import com.lucas.biblioteca.entities.Autor;
 import com.lucas.biblioteca.entities.Livro;
+import com.lucas.biblioteca.exceptions.ConflitoNegocioException;
+import com.lucas.biblioteca.exceptions.DadoInvalidoException;
 import com.lucas.biblioteca.exceptions.RecursoNaoEncontradoException;
 import com.lucas.biblioteca.repositories.AutorRepository;
 import com.lucas.biblioteca.repositories.LivroRepository;
@@ -27,15 +29,15 @@ public class LivroService {
 	@Transactional
 	public Livro registrarLivro (Livro livro) {
 		if (livro.getId() != null) {
-			throw new RecursoNaoEncontradoException("Um livro novo não deve ter ID.");
+			throw new DadoInvalidoException("Um livro novo não deve ter ID.");
 		}
 		// verificador de ISBN/ verifica se está em branco
 		if (livro.getIsbn() == null || livro.getIsbn().isBlank()) {
-			throw new RecursoNaoEncontradoException("Informe o ISBN do livro.");
+			throw new DadoInvalidoException("Informe o ISBN do livro.");
 		}
 		//verifica se o ISBN ja existe
 		if (livroRepository.existsByIsbn(livro.getIsbn())) {
-			throw new RecursoNaoEncontradoException("ISBN já existente");
+			throw new ConflitoNegocioException("ISBN já existente");
 		}
 		
 		//verifcador de autor
@@ -43,7 +45,7 @@ public class LivroService {
 		Autor autorInformado = livro.getAutor();
 		// se autor nulo, pede para digitar um
 		if (autorInformado == null) {
-			throw new RecursoNaoEncontradoException("Informe um autor.");
+			throw new DadoInvalidoException("Informe um autor.");
 		}
 		
 		Autor autor;
@@ -55,7 +57,7 @@ public class LivroService {
 			String nome = autorInformado.getNome();
 			//se nome for nulo ou branco, pede para informar um nome
 			if (nome == null || nome.isBlank()) {
-				throw new RecursoNaoEncontradoException("Informe o nome do autor.");
+				throw new DadoInvalidoException("Informe o nome do autor.");
 			}
 			String nomeNormalizado = nome.strip();
 			

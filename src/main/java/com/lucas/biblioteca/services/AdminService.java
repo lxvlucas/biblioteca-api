@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.stereotype.Service;
 
 import com.lucas.biblioteca.entities.Admin;
+import com.lucas.biblioteca.exceptions.ConflitoNegocioException;
+import com.lucas.biblioteca.exceptions.DadoInvalidoException;
 import com.lucas.biblioteca.exceptions.RecursoNaoEncontradoException;
 import com.lucas.biblioteca.repositories.AdminRepository;
 
@@ -20,30 +22,30 @@ public class AdminService {
 	@Transactional
 	public Admin registrarAdmin(Admin admin) {
 		if (admin.getId() != null) {
-			throw new RecursoNaoEncontradoException("Admin novo não deve ter ID.");
+			throw new DadoInvalidoException("Admin novo não deve ter ID.");
 		}
 		//nome
 		if (admin.getNome() == null || admin.getNome().isBlank()) {
-		    throw new RecursoNaoEncontradoException("Informe o nome do admin.");
+		    throw new DadoInvalidoException("Informe o nome do admin.");
 		}
 		//verificador de CPF
 		if (admin.getCpf() == null || admin.getCpf().isBlank()) {
-			throw new RecursoNaoEncontradoException("admin precisa de um CPF.");
+			throw new DadoInvalidoException("admin precisa de um CPF.");
 		}
 		if (adminRepository.existsByCpf(admin.getCpf())) {
-			throw new RecursoNaoEncontradoException("Já existe um admin com este CPF");
+			throw new ConflitoNegocioException("Já existe um admin com este CPF");
 		}
 		
 		//verificador de email
 		if (admin.getEmail() == null || admin.getEmail().isBlank()) {
-			throw new RecursoNaoEncontradoException("admin precisa de um email.");
+			throw new DadoInvalidoException("admin precisa de um email.");
 		}
 		if (adminRepository.existsByEmail(admin.getEmail())) {
-			throw new RecursoNaoEncontradoException("Já existe um admin com este email");
+			throw new ConflitoNegocioException("Já existe um admin com este email");
 		}
 		//celular 
 		if (admin.getCelular() == null || admin.getCelular().isBlank()) {
-			throw new RecursoNaoEncontradoException("admin precisa de um Celular.");
+			throw new DadoInvalidoException("admin precisa de um Celular.");
 		}
 		return adminRepository.save(admin);
 	}

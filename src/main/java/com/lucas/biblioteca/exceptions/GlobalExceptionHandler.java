@@ -14,5 +14,17 @@ public class GlobalExceptionHandler {
 		
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(erro);
 	}
+	@ExceptionHandler(DadoInvalidoException.class)
+	public ResponseEntity<ProblemDetail> tratarDadoInvalido(DadoInvalidoException exception) {
+		ProblemDetail erro = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, exception.getMessage());
+		
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(erro);
+	}
+	@ExceptionHandler(ConflitoNegocioException.class)
+	public ResponseEntity<ProblemDetail> tratarConflitoNegocio(ConflitoNegocioException exception) {
+		ProblemDetail erro = ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, exception.getMessage());
+		
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(erro);
+	}
 }
 

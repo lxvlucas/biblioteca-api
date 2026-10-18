@@ -8,6 +8,8 @@ import org.springframework.stereotype.Service;
 import com.lucas.biblioteca.entities.Emprestimo;
 import com.lucas.biblioteca.entities.Exemplar;
 import com.lucas.biblioteca.entities.Leitor;
+import com.lucas.biblioteca.exceptions.ConflitoNegocioException;
+import com.lucas.biblioteca.exceptions.DadoInvalidoException;
 import com.lucas.biblioteca.exceptions.RecursoNaoEncontradoException;
 import com.lucas.biblioteca.repositories.EmprestimoRepository;
 import com.lucas.biblioteca.repositories.ExemplarRepository;
@@ -30,19 +32,19 @@ public class EmprestimoService {
 	@Transactional
 	public Emprestimo registrarEmprestimo(Emprestimo emprestimo) {
 		if (emprestimo.getId() != null) {
-			throw new RecursoNaoEncontradoException("Emprestimo novo não deve ter ID preenchido.");
+			throw new DadoInvalidoException("Emprestimo novo não deve ter ID preenchido.");
 		}
 		
 		if (emprestimo.getDataEmprestimo() != null) {
-			throw new RecursoNaoEncontradoException("Data de emprestimo precisa estar vazia.");
+			throw new DadoInvalidoException("Data de emprestimo precisa estar vazia.");
 		}
 		
 		if (emprestimo.getDataDevolucaoPrevista() != null) {
-			throw new RecursoNaoEncontradoException("Data de devolução prevista precisa estar vazia.");
+			throw new DadoInvalidoException("Data de devolução prevista precisa estar vazia.");
 		}
 		
 		if (emprestimo.getDataDevolucao() != null) {
-			throw new RecursoNaoEncontradoException("Data de devolução precisa estar vazia.");
+			throw new DadoInvalidoException("Data de devolução precisa estar vazia.");
 		}
 		
 		LocalDate dataEmprestimo = LocalDate.now();
@@ -52,19 +54,19 @@ public class EmprestimoService {
 		emprestimo.setDataDevolucaoPrevista(dataDevolucaoPrevista);
 		
 		if (emprestimo.getLeitor() == null) {
-			throw new RecursoNaoEncontradoException("Emprestimo precisa estar vinculado a um leitor.");
+			throw new DadoInvalidoException("Emprestimo precisa estar vinculado a um leitor.");
 		}
 		
 		if (emprestimo.getLeitor().getId() == null) {
-			throw new RecursoNaoEncontradoException("Leitor inválido.");
+			throw new DadoInvalidoException("Leitor inválido.");
 		}
 		
 		if (emprestimo.getExemplar() == null) {
-			throw new RecursoNaoEncontradoException("Emprestimo precisa estar vinculado a um exemplar de um livro.");
+			throw new DadoInvalidoException("Emprestimo precisa estar vinculado a um exemplar de um livro.");
 		}
 		
 		if (emprestimo.getExemplar().getId() == null) {
-			throw new RecursoNaoEncontradoException("Exemplar inválido.");
+			throw new DadoInvalidoException("Exemplar inválido.");
 		}
 		
 		if (leitorRepository.existsById(emprestimo.getLeitor().getId())) {
@@ -74,7 +76,7 @@ public class EmprestimoService {
 			throw new RecursoNaoEncontradoException("Leitor não encontrado.");
 		}
 		if (emprestimoRepository.countByLeitor_IdAndDataDevolucaoIsNull(emprestimo.getLeitor().getId()) >= 3) {
-			throw new RecursoNaoEncontradoException("Leitor já está com 3 emprestimos ativos.");
+			throw new ConflitoNegocioException("Leitor já está com 3 emprestimos ativos.");
 		}
 		if (exemplarRepository.existsById(emprestimo.getExemplar().getId())) {
 			Exemplar exemplarInformado = exemplarRepository.findById(emprestimo.getExemplar().getId()).orElseThrow(() -> new RecursoNaoEncontradoException("Exemplar não encontrado."));
@@ -82,26 +84,25 @@ public class EmprestimoService {
 		} else {
 			throw new RecursoNaoEncontradoException("Exemplar não encontrado.");
 		}
-		
 		if (emprestimoRepository.existsByExemplar_IdAndDataDevolucaoIsNull(emprestimo.getExemplar().getId())) {
-			throw new RecursoNaoEncontradoException("Exemplar já está alocado.");
+			throw new ConflitoNegocioException("Exemplar já está alocado.");
 		} 
 		return emprestimoRepository.save(emprestimo);
 	}
 	@Transactional
 	public Emprestimo resgistrarDevolução(Long emprestimoId) {
 		if (emprestimoId == null) {
-			throw new RecursoNaoEncontradoException("Informe um ID.");
+			throw new DadoInvalidoException("Informe um ID.");
 		}
 		Emprestimo emprestimo = emprestimoRepository.findById(emprestimoId).orElseThrow(() -> new RecursoNaoEncontradoException("Emprestimo não encontrado."));
 		if (emprestimo.getLeitor().getId() == null) {
-			throw new RecursoNaoEncontradoException("Leitor inválido.");
+			throw new DadoInvalidoException("Leitor inválido.");
 		}
 		if (emprestimo.getExemplar().getId() == null) {
-			throw new RecursoNaoEncontradoException("Exemplar inválido.");
+			throw new DadoInvalidoException("Exemplar inválido.");
 		}
 		if (emprestimo.getDataDevolucao() != null) {
-			throw new RecursoNaoEncontradoException("Exemplar já devolvido.");
+			throw new ConflitoNegocioException("Exemplar já devolvido.");
 		}
 		emprestimo.setDataDevolucao(LocalDate.now());
 		return emprestimoRepository.save(emprestimo);
