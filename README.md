@@ -8,9 +8,9 @@ As entidades JPA, os repositories, os services, os DTOs e os seis controllers es
 
 O empréstimo usa a data atual, prazo de 14 dias e limite de três empréstimos ativos por leitor. O service rejeita um exemplar já emprestado e uma segunda devolução do mesmo empréstimo em operações sequenciais.
 
-A próxima etapa é implementar tratamento de erros HTTP e validar os fluxos com PostgreSQL. Ainda faltam testes das regras e endpoints, proteção contra operações simultâneas, atualização e exclusão de cadastros e consultas de empréstimos ativos e atrasados. Autenticação e autorização ficam para uma evolução futura.
+A próxima etapa é ampliar os testes dos services e dos endpoints e validar os fluxos com PostgreSQL. Ainda faltam proteção contra operações simultâneas, atualização e exclusão de cadastros e consultas de empréstimos ativos e atrasados. Autenticação e autorização ficam para uma evolução futura.
 
-Os comportamentos descritos nesta página refletem a leitura do código. A execução completa e os cenários de erro ainda precisam ser verificados.
+Os testes unitários cobrem cenários de empréstimo e devolução. O fluxo completo da API com PostgreSQL ainda precisa ser validado.
 
 ## Tecnologias
 
@@ -174,7 +174,7 @@ Para executar esse comando, `plantuml.jar` deve estar no diretório atual. Depen
 │   └── BibliotecaApplication.java   # Entrada da aplicação
 ├── src/main/resources/
 │   └── application.properties      # Configuração da aplicação e do banco
-├── src/test/java/                   # Teste de carregamento do contexto
+├── src/test/java/                   # Testes unitários dos serviços
 └── pom.xml
 ```
 
@@ -204,11 +204,24 @@ Com `ddl-auto=update`, o Hibernate pode atualizar as tabelas ao iniciar. Use um 
 
 ## Testes
 
+Os testes de [EmprestimoServiceTest](src/test/java/com/lucas/biblioteca/services/EmprestimoServiceTest.java) usam JUnit 5 e Mockito, com repositories simulados, sem iniciar o Spring ou acessar o banco. Os seis cenários atuais são:
+
+- Segunda devolução rejeitada, mantendo a data original.
+- Devolução de um empréstimo inexistente.
+- Primeira devolução válida, preservando as datas de empréstimo e prazo.
+- Tentativa de emprestar um exemplar ocupado.
+- Tentativa de um quarto empréstimo ativo para o mesmo leitor.
+- Cadastro permitido com dois empréstimos ativos e um exemplar disponível.
+
+Os testes também verificam as chamadas ao `save`: nas operações rejeitadas, ele não deve ser chamado.
+
+Para executar:
+
 ```powershell
 .\mvnw.cmd test
 ```
 
-O teste atual, `BibliotecaApplicationTests`, verifica se o contexto Spring carrega e depende da configuração do banco. Os testes das regras dos services e dos endpoints HTTP ainda precisam ser escritos.
+Ainda faltam testes dos demais services e dos endpoints, além de testes de integração com PostgreSQL.
 
 ## Próximas etapas
 

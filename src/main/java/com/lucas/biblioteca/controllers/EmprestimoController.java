@@ -68,7 +68,7 @@ public class EmprestimoController {
 	
 	@PostMapping("/{id}/devolucao")
 	public EmprestimoResponse registrarDevolucao(@PathVariable Long id) {
-		Emprestimo devolucao = emprestimoService.resgistrarDevolução(id);
+		Emprestimo devolucao = emprestimoService.resgistrarDevolucao(id);
 		
 		return new EmprestimoResponse(devolucao.getId(), devolucao.getDataEmprestimo(), devolucao.getDataDevolucaoPrevista(), devolucao.getDataDevolucao(), devolucao.getLeitor().getId(), devolucao.getExemplar().getId());
 	}

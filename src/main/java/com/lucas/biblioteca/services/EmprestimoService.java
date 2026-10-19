@@ -89,8 +89,9 @@ public class EmprestimoService {
 		} 
 		return emprestimoRepository.save(emprestimo);
 	}
+	
 	@Transactional
-	public Emprestimo resgistrarDevolução(Long emprestimoId) {
+	public Emprestimo resgistrarDevolucao(Long emprestimoId) {
 		if (emprestimoId == null) {
 			throw new DadoInvalidoException("Informe um ID.");
 		}
